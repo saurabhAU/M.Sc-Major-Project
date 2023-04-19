@@ -1,0 +1,262 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "private_outputs": true,
+      "provenance": [],
+      "authorship_tag": "ABX9TyM7KnSIEuIJvMEtxMuqndMT",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    },
+    "accelerator": "TPU",
+    "gpuClass": "standard"
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/saurabhAU/M.Sc-Major-Project/blob/main/data%20cleaning\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "QNMOaVmkdfGs"
+      },
+      "outputs": [],
+      "source": [
+        "import numpy as np\n",
+        "import pandas as pd\n",
+        "import matplotlib.pyplot as plt\n",
+        "import seaborn as sns\n"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "df=pd.read_csv('/content/AXISBANK.csv')\n",
+        "df"
+      ],
+      "metadata": {
+        "id": "VR_GK8UPd4OB"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "df.head()"
+      ],
+      "metadata": {
+        "id": "1o3h3_HygZLo"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "df.shape"
+      ],
+      "metadata": {
+        "id": "2vWvJUdFhLYp"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "df.describe()"
+      ],
+      "metadata": {
+        "id": "F62h299GfVXp"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "df.info()"
+      ],
+      "metadata": {
+        "id": "3CAkwH2kfllL"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "df.columns"
+      ],
+      "metadata": {
+        "id": "T7YeLsEWeDyB"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "Check for missing values:"
+      ],
+      "metadata": {
+        "id": "nR8QyHxTemFj"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "print(df.isnull().sum())\n"
+      ],
+      "metadata": {
+        "id": "151tL05aecL-"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "df.drop_duplicates()"
+      ],
+      "metadata": {
+        "id": "0uOPvQXSf-_V"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# we can use boxplots or histograms to visualize the distribution of data\n",
+        "# and identify any outliers\n",
+        "df.boxplot(column=['Open', 'High', 'Low', 'Last', 'Close'])\n"
+      ],
+      "metadata": {
+        "id": "pkfQiyRJhbQb"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "sns.heatmap(df.isnull())"
+      ],
+      "metadata": {
+        "id": "yxfbbjbRlmyE"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "sns.distplot(df['Volume'])\n",
+        "print(\"Skew:\",df['Volume'].skew())\n",
+        "print(\"Kurtosis:\", df[\"Volume\"].kurtosis())"
+      ],
+      "metadata": {
+        "id": "to99mNQimDBs"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "plt.figure(figsize=(20,10))\n",
+        "ax1 = plt.subplot(2,2,1)\n",
+        "ax2=plt.subplot(2,2,2)\n",
+        "ax3=plt.subplot(2,2,3)\n",
+        "ax4=plt.subplot(2,2,4)\n",
+        "sns.distplot(df['Open'],ax=ax1)\n",
+        "sns.distplot(df['High'],ax=ax2)\n",
+        "sns.distplot(df['Low'],ax=ax3)\n",
+        "sns.distplot(df['Close'],ax=ax4)"
+      ],
+      "metadata": {
+        "id": "KchlpG4tmXaY"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "plt.figure(figsize=(20,10))\n",
+        "ax1 = plt.subplot(2,2,1)\n",
+        "ax2=plt.subplot(2,2,2)\n",
+        "ax3=plt.subplot(2,2,3)\n",
+        "ax4=plt.subplot(2,2,4)\n",
+        "sns.boxplot(y='Open',data=df,ax=ax1)\n",
+        "sns.boxplot(y='High',data=df,ax=ax2)\n",
+        "sns.boxplot(y='Low',data=df,ax=ax3)\n",
+        "sns.boxplot(y='Close',data=df,ax=ax4)\n",
+        "plt.show()"
+      ],
+      "metadata": {
+        "id": "Ms-BmI9Ym1yL"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "sns.heatmap(df.corr())"
+      ],
+      "metadata": {
+        "id": "tsHuOORRnQa0"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "#relations among open-low,open-high,close-low,close-high\n",
+        "plt.figure(figsize=(20,10))\n",
+        "ax1 = plt.subplot(2,2,1)\n",
+        "ax2=plt.subplot(2,2,2)\n",
+        "ax3=plt.subplot(2,2,3)\n",
+        "ax4=plt.subplot(2,2,4)\n",
+        "sns.scatterplot(y=df['Open'],x=df['Low'],ax=ax1)\n",
+        "sns.scatterplot(y=df['Open'],x=df['High'],ax=ax2)\n",
+        "sns.scatterplot(y=df['Close'],x=df['Low'],ax=ax3)\n",
+        "sns.scatterplot(y=df['Close'],x=df['High'],ax=ax4)\n",
+        "plt.show()"
+      ],
+      "metadata": {
+        "id": "8aZBASe0neKL"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [],
+      "metadata": {
+        "id": "H4l5MbNyo5VL"
+      },
+      "execution_count": null,
+      "outputs": []
+    }
+  ]
+}
