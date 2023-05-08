@@ -1,0 +1,172 @@
+# Load required packages
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(purrr)
+library(GGally)
+library(lubridate)
+
+
+options(scipen=999)
+
+# Read in the data
+df<-read.csv("G:/Group Project M.sc/Data/ADANIPORTS.csv")
+
+# Check for missing values
+colSums(is.na(df))
+
+# Rename columns
+colnames(df) <- c("Date", "Symbol", "Series", "PrevClose", "Open", "High", "Low", "Last", "Close", "VWAP", "Volume", "Turnover", "Trades", "DeliverableVolume", "DeliverablePct")
+
+# Convert Date column to date format
+df$Date <- as.Date(df$Date, format = "%Y-%m-%d")
+
+# Remove  with missing values
+df <- df[,-13]
+
+# Convert numeric columns to numeric format
+df$PrevClose <- as.numeric(df$PrevClose)
+df$Open <- as.numeric(df$Open)
+df$High <- as.numeric(df$High)
+df$Low <- as.numeric(df$Low)
+df$Last <- as.numeric(df$Last)
+df$Close <- as.numeric(df$Close)
+df$VWAP <- as.numeric(df$VWAP)
+df$Volume <- as.integer(df$Volume)
+df$Turnover <- as.numeric(df$Turnover)
+df$DeliverableVolume <- as.integer(df$DeliverableVolume)
+df$DeliverablePct <- as.numeric(df$DeliverablePct)
+
+
+# Check for duplicates
+sum(duplicated(df))
+
+# Remove duplicates
+df <- df[!duplicated(df),]
+
+# Check the structure of the cleaned data frame
+str(df)
+
+# Preview the cleaned data
+head(df)
+
+# Remove unnecessary columns
+df <- select(df, -c(Symbol, Series))
+
+# Remove rows with missing values
+df <- na.omit(df)
+
+# View summary statistics of numerical variables
+summary(select_if(df, is.numeric))
+
+
+
+# Convert Date column to Date type
+df$Date <- as.Date(df$Date, "%Y-%m-%d")
+
+# Set Date as index
+adani_port_ts <- ts(df$Close, frequency = 365, start = c(2007, 1), end = c(2021, 12))
+
+# Simple Exponential Smoothing
+adani_port_ses <- ses(adani_port_ts, alpha = 0.2)
+plot(adani_port_ses, main = "Adani Port - Simple Exponential Smoothing")
+
+
+# Holt's Linear Trend Model
+adani_port_holt <- holt(adani_port_ts)
+plot(adani_port_holt, main = "Adani Port - Holt's Linear Trend Model")
+
+
+# ARIMA Model
+adani_port_arima <- auto.arima(adani_port_ts, seasonal = TRUE)
+plot(adani_port_arima$fitted, main = "Adani Port - ARIMA Model")
+
+# Seasonal ARIMA Model
+adani_port_sarima <- auto.arima(adani_port_ts, seasonal = TRUE)
+plot(adani_port_sarima$fitted, main = "Adani Port - Seasonal ARIMA Model")
+
+
+# Convert date column to Date format
+df$Date <- as.Date(df$Date)
+
+# Prepare data for Prophet
+adani_port_ts <- df[, c("Date", "Close")]
+names(adani_port_ts) <- c("ds", "y")
+
+# Fit Prophet model
+adani_port_prophet <- prophet(adani_port_ts, seasonality.mode = "additive")
+
+# Make future predictions
+future <- make_future_dataframe(adani_port_prophet, periods = 365)
+forecast <- predict(adani_port_prophet, future)
+
+# Plot forecast
+prophet_plot_components(adani_port_prophet, forecast)
+ggplot(data = forecast, aes(x = ds, y = yhat)) + geom_line() + 
+  geom_ribbon(aes(ymin = yhat_lower, ymax = yhat_upper), alpha = 0.2) + 
+  labs(title = "Adani Port Stock Price Forecast with Prophet",
+       y = "Close Price", x = "Date")
+
+
+
+
+
+df$Date <- as.Date(df$Date, format="%Y-%m-%d")
+df_ts <- ts(df$Close, frequency = 365, start = c(2008,1), end = c(2021,365))
+# Exponential smoothing
+hw_model <- HoltWinters(df_ts)
+hw_pred <- predict(hw_model, n.ahead = 365)
+hw_error <- sqrt(mean((hw_pred$pred - df_ts[(length(df_ts)+1):length(hw_pred$pred)])^2))
+
+# Plot the results
+plot(hw_pred, main = "Adani Port - Exponential Smoothing")
+lines(df_ts, col = "blue")
+
+
+
+# ARMA
+arma_model <- auto.arima(df_ts)
+arma_pred <- forecast(arma_model, h = 365)
+arma_error <- sqrt(mean((arma_pred$mean - df_ts[length(df_ts)-length(arma_pred$mean)+1:length(arma_pred$mean)])^2))
+
+arma_error <- sqrt(mean((arma_pred$mean - df_ts[length(df_ts)]+1:length(arma_pred$mean)])^2))
+# Plot the results
+plot(arma_pred, main = "Adani Port - ARMA")
+lines(df_ts, col = "blue")
+
+# ARIMA
+arima_model <- auto.arima(df_ts, seasonal = TRUE)
+arima_pred <- forecast(arima_model, h = 365)
+arima_error <- sqrt(mean((arima_pred$mean - df_ts[length(df_ts)]+1:length(arima_pred$mean)])^2))
+
+# Plot the results
+plot(arima_pred, main = "Adani Port - ARIMA")
+lines(df_ts, col = "blue")
+
+# Add additional variables
+df$Year <- as.numeric(format(df$Date, "%Y"))
+df$Month <- as.numeric(format(df$Date, "%m"))
+df$Weekday <- as.numeric(format(df$Date, "%w"))
+df$WeekOfYear <- as.numeric(format(df$Date, "%U"))
+
+# ARIMAX
+arimax_model <- auto.arima(df_ts, xreg = cbind(df$Year, df$Month, df$Weekday, df$WeekOfYear), seasonal = TRUE)
+arimax_pred <- forecast(arimax_model, xreg = cbind(rep(2022, 365), rep(13, 365), rep(0:6, 52)), h = 365)
+arimax_error <- sqrt(mean((arimax_pred$mean - df_ts[length(df_ts)]+1:length(arimax_pred$mean)])^2))
+
+# Plot the results
+plot(arimax_pred, main = "Adani Port - ARIMAX")
+lines(df_ts, col = "blue")
+
+cat("Exponential Smoothing error: ", hw_error, "\n")
+cat("ARMA error: ", arma_error, "\n")
+cat("ARIMA error: ", arima_error, "\n")
+cat("ARIM
+
+
+
+
+
+
+
+
